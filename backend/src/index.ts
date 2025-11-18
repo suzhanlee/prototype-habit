@@ -7,6 +7,7 @@ import habitRoutes from './routes/habit.routes';
 import habitLogRoutes from './routes/habitlog.routes';
 import dashboardRoutes from './routes/dashboard.routes';
 import notificationRoutes from './routes/notification.routes';
+import userRoutes from './routes/user.routes';
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ app.get('/health', (_req, res) => {
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/habits', habitRoutes);
 app.use('/api/habits', habitLogRoutes);
 app.use('/api/dashboard', dashboardRoutes);
@@ -60,6 +62,11 @@ const server = app.listen(PORT, () => {
   console.log(`   POST   /api/auth/login`);
   console.log(`   POST   /api/auth/refresh`);
   console.log(`   GET    /api/auth/me`);
+  console.log(`   GET    /api/users/settings`);
+  console.log(`   PUT    /api/users/profile`);
+  console.log(`   PUT    /api/users/settings`);
+  console.log(`   POST   /api/users/password`);
+  console.log(`   DELETE /api/users/account`);
   console.log(`   GET    /api/habits`);
   console.log(`   POST   /api/habits`);
   console.log(`   GET    /api/habits/:id`);

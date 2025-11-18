@@ -94,6 +94,12 @@ export default function DashboardLayout({
             >
               통계
             </Link>
+            <Link
+              href="/settings"
+              className="px-1 py-4 border-b-2 border-transparent text-gray-600 hover:border-gray-300 font-medium text-sm"
+            >
+              설정
+            </Link>
           </div>
         </div>
       </nav>
