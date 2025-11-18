@@ -3,6 +3,9 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/useAuth';
+import NotificationBell from '@/components/notifications/NotificationBell';
+import { useEffect } from 'react';
+import { initializePushNotifications } from '@/lib/pushNotifications';
 
 export default function DashboardLayout({
   children,
@@ -11,6 +14,15 @@ export default function DashboardLayout({
 }) {
   const { isAuthenticated, isLoading, logout, user } = useAuth();
   const router = useRouter();
+
+  // Initialize push notifications when user is authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      initializePushNotifications().catch((error) => {
+        console.error('Failed to initialize push notifications:', error);
+      });
+    }
+  }, [isAuthenticated]);
 
   if (isLoading) {
     return (
@@ -42,6 +54,7 @@ export default function DashboardLayout({
             Habit Tracker
           </Link>
           <div className="flex items-center gap-4">
+            <NotificationBell />
             <span className="text-sm text-gray-600">{user?.username}</span>
             <button
               onClick={handleLogout}
@@ -68,6 +81,12 @@ export default function DashboardLayout({
               className="px-1 py-4 border-b-2 border-transparent text-gray-600 hover:border-gray-300 font-medium text-sm"
             >
               습관 관리
+            </Link>
+            <Link
+              href="/notifications"
+              className="px-1 py-4 border-b-2 border-transparent text-gray-600 hover:border-gray-300 font-medium text-sm"
+            >
+              알림
             </Link>
             <Link
               href="/stats"

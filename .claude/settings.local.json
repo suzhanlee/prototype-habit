@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nchore: 프로젝트 초기 설정 및 문서화\n\n- Monorepo 폴더 구조 설정 (frontend, backend)\n- .gitignore, package.json, 환경변수 템플릿 추가\n- Docker Compose 설정 (PostgreSQL, Redis)\n- 상세한 PRD (Product Requirements Document) 작성\n- 프로젝트 README 업데이트\n\n🤖 Generated with Claude Code\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git commit:*)",
+      "Bash(npm install)",
+      "Bash(npx prisma db push:*)",
+      "Bash(npx prisma generate:*)",
+      "Bash(PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING=1 npx prisma generate:*)",
+      "Bash(npx ts-node:*)",
+      "Bash(npm install:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
