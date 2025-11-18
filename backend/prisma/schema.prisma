@@ -1,0 +1,140 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id    Int     @id @default(autoincrement())
+  email String  @unique
+  username String @unique
+  passwordHash String
+  avatarUrl String?
+  timezone String @default("Asia/Seoul")
+  locale String @default("ko")
+  pushNotificationEnabled Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  habits Habit[]
+  habitLogs HabitLog[]
+  streaks Streak[]
+  notifications Notification[]
+  pushSubscriptions PushSubscription[]
+
+  @@map("users")
+}
+
+model Habit {
+  id    Int     @id @default(autoincrement())
+  userId Int
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name String
+  description String?
+  category String @default("기타") // 운동, 독서, 명상, 학습, 건강, 기타
+  frequencyType String // daily, weekly, custom
+  frequencyDetail Json? // {"days": [1,3,5]} or {"interval": 2}
+  targetValue String? // "30분", "20페이지"
+  reminderEnabled Boolean @default(true)
+  reminderTime String? // HH:MM format
+  colorHex String @default("#3B82F6")
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  logs HabitLog[]
+  streak Streak?
+  notifications Notification[]
+
+  @@index([userId])
+  @@map("habits")
+}
+
+model HabitLog {
+  id    Int     @id @default(autoincrement())
+  habitId Int
+  habit Habit @relation(fields: [habitId], references: [id], onDelete: Cascade)
+
+  userId Int
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  loggedDate DateTime @db.Date
+  isCompleted Boolean @default(false)
+  notes String?
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([habitId, loggedDate])
+  @@index([userId, loggedDate])
+  @@index([habitId, loggedDate])
+  @@map("habit_logs")
+}
+
+model Streak {
+  id    Int     @id @default(autoincrement())
+  habitId Int @unique
+  habit Habit @relation(fields: [habitId], references: [id], onDelete: Cascade)
+
+  userId Int
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  currentStreak Int @default(0)
+  longestStreak Int @default(0)
+  lastCompletedDate DateTime? @db.Date
+  streakStartedDate DateTime? @db.Date
+  updatedAt DateTime @updatedAt
+
+  @@index([habitId])
+  @@map("streaks")
+}
+
+model Notification {
+  id    Int     @id @default(autoincrement())
+  userId Int
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  habitId Int?
+  habit Habit? @relation(fields: [habitId], references: [id], onDelete: SetNull)
+
+  type String // reminder, streak, achievement
+  title String
+  body String?
+  isRead Boolean @default(false)
+  scheduledAt DateTime?
+  sentAt DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([scheduledAt])
+  @@map("notifications")
+}
+
+model PushSubscription {
+  id    Int     @id @default(autoincrement())
+  userId Int
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  endpoint String
+  authKey String
+  p256dhKey String
+  userAgent String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, endpoint])
+  @@index([userId])
+  @@map("push_subscriptions")
+}
