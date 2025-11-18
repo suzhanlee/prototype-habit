@@ -9,7 +9,10 @@
       "Bash(npx prisma generate:*)",
       "Bash(PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING=1 npx prisma generate:*)",
       "Bash(npx ts-node:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx tsc:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []
