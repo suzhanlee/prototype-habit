@@ -1,0 +1,22 @@
+{
+  "name": "prototype-habit",
+  "version": "0.1.0",
+  "description": "Habit tracking web application",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=frontend & npm run dev --workspace=backend",
+    "build": "npm run build --workspace=frontend && npm run build --workspace=backend",
+    "start": "npm run start --workspace=backend",
+    "test": "npm run test --workspace=frontend && npm run test --workspace=backend",
+    "lint": "npm run lint --workspace=frontend && npm run lint --workspace=backend",
+    "db:push": "npm run db:push --workspace=backend",
+    "db:seed": "npm run db:seed --workspace=backend"
+  },
+  "keywords": ["habit", "tracking", "productivity"],
+  "author": "",
+  "license": "MIT"
+}
