@@ -4,8 +4,65 @@ import { generateToken, generateRefreshToken } from '../middleware/auth';
 
 const prisma = new PrismaClient();
 
+// Password validation function
+const validatePassword = (password: string): { isValid: boolean; errors: string[] } => {
+  const errors: string[] = [];
+
+  // Minimum length
+  if (password.length < 8) {
+    errors.push('비밀번호는 최소 8자 이상이어야 합니다.');
+  }
+
+  // Maximum length
+  if (password.length > 128) {
+    errors.push('비밀번호는 최대 128자까지 가능합니다.');
+  }
+
+  // At least one lowercase letter
+  if (!/[a-z]/.test(password)) {
+    errors.push('비밀번호는 최소 하나의 소문자를 포함해야 합니다.');
+  }
+
+  // At least one uppercase letter
+  if (!/[A-Z]/.test(password)) {
+    errors.push('비밀번호는 최소 하나의 대문자를 포함해야 합니다.');
+  }
+
+  // At least one number
+  if (!/\d/.test(password)) {
+    errors.push('비밀번호는 최소 하나의 숫자를 포함해야 합니다.');
+  }
+
+  // At least one special character
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+    errors.push('비밀번호는 최소 하나의 특수문자를 포함해야 합니다.');
+  }
+
+  // Cannot contain common weak passwords
+  const commonPasswords = [
+    'password', '123456', '123456789', 'qwerty', 'abc123',
+    'password123', 'admin', 'letmein', 'welcome', 'monkey',
+    '1234567890', 'password1', 'qwerty123'
+  ];
+
+  if (commonPasswords.includes(password.toLowerCase())) {
+    errors.push('너무 쉬운 비밀번호는 사용할 수 없습니다.');
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+};
+
 export const authService = {
   async register(email: string, username: string, password: string) {
+    // Validate password
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      throw new Error(passwordValidation.errors.join(' '));
+    }
+
     // Check if user exists
     const existingUser = await prisma.user.findFirst({
       where: {
@@ -17,8 +74,8 @@ export const authService = {
       throw new Error('Email or username already exists');
     }
 
-    // Hash password
-    const passwordHash = await bcryptjs.hash(password, 10);
+    // Hash password with stronger salt rounds
+    const passwordHash = await bcryptjs.hash(password, 12);
 
     // Create user
     const user = await prisma.user.create({

@@ -3,6 +3,57 @@ import bcryptjs from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
+// Password validation function (shared with auth service)
+const validatePassword = (password: string): { isValid: boolean; errors: string[] } => {
+  const errors: string[] = [];
+
+  // Minimum length
+  if (password.length < 8) {
+    errors.push('비밀번호는 최소 8자 이상이어야 합니다.');
+  }
+
+  // Maximum length
+  if (password.length > 128) {
+    errors.push('비밀번호는 최대 128자까지 가능합니다.');
+  }
+
+  // At least one lowercase letter
+  if (!/[a-z]/.test(password)) {
+    errors.push('비밀번호는 최소 하나의 소문자를 포함해야 합니다.');
+  }
+
+  // At least one uppercase letter
+  if (!/[A-Z]/.test(password)) {
+    errors.push('비밀번호는 최소 하나의 대문자를 포함해야 합니다.');
+  }
+
+  // At least one number
+  if (!/\d/.test(password)) {
+    errors.push('비밀번호는 최소 하나의 숫자를 포함해야 합니다.');
+  }
+
+  // At least one special character
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+    errors.push('비밀번호는 최소 하나의 특수문자를 포함해야 합니다.');
+  }
+
+  // Cannot contain common weak passwords
+  const commonPasswords = [
+    'password', '123456', '123456789', 'qwerty', 'abc123',
+    'password123', 'admin', 'letmein', 'welcome', 'monkey',
+    '1234567890', 'password1', 'qwerty123'
+  ];
+
+  if (commonPasswords.includes(password.toLowerCase())) {
+    errors.push('너무 쉬운 비밀번호는 사용할 수 없습니다.');
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+};
+
 // List of valid IANA timezones (common ones for dropdown)
 const VALID_TIMEZONES = [
   'America/New_York',
@@ -177,9 +228,10 @@ export const userService = {
       throw new Error('Current password is incorrect');
     }
 
-    // Validate new password
-    if (newPassword.length < 8) {
-      throw new Error('New password must be at least 8 characters');
+    // Validate new password with comprehensive validation
+    const passwordValidation = validatePassword(newPassword);
+    if (!passwordValidation.isValid) {
+      throw new Error(passwordValidation.errors.join(' '));
     }
 
     // Check that new password is different from current
@@ -188,11 +240,11 @@ export const userService = {
       user.passwordHash
     );
     if (isSamePassword) {
-      throw new Error('New password cannot be the same as current password');
+      throw new Error('새 비밀번호는 현재 비밀번호와 달라야 합니다.');
     }
 
-    // Hash new password
-    const newPasswordHash = await bcryptjs.hash(newPassword, 10);
+    // Hash new password with stronger salt rounds
+    const newPasswordHash = await bcryptjs.hash(newPassword, 12);
 
     // Update password
     await prisma.user.update({
