@@ -8,6 +8,7 @@ import habitLogRoutes from './routes/habitlog.routes';
 import dashboardRoutes from './routes/dashboard.routes';
 import notificationRoutes from './routes/notification.routes';
 import userRoutes from './routes/user.routes';
+import analyticsRoutes from './routes/analytics.routes';
 
 dotenv.config();
 
@@ -35,6 +36,7 @@ app.use('/api/habits', habitRoutes);
 app.use('/api/habits', habitLogRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // 404 Handler
 app.use((_req, res) => {

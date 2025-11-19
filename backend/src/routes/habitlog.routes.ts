@@ -11,5 +11,6 @@ router.post('/:id/logs', habitLogController.checkIn);
 router.get('/:id/logs', habitLogController.getLogs);
 router.put('/:id/logs/:logId', habitLogController.updateLog);
 router.delete('/:id/logs/:logId', habitLogController.deleteLog);
+router.get('/today', habitLogController.getTodayLogs);
 
 export default router;
