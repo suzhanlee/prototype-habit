@@ -94,8 +94,11 @@ export const habitLogService = {
         notification.body || ''
       );
 
-      // Recalculate streak to check for milestones
-      await streakService.calculateStreak(habitId);
+      // Only recalculate streak if necessary (optimization to prevent unnecessary calculations)
+      const shouldRecalculate = await streakService.shouldRecalculateStreak(habitId);
+      if (shouldRecalculate) {
+        await streakService.calculateStreak(habitId);
+      }
 
       // Get updated streak
       const streak = await streakService.getStreak(habitId);

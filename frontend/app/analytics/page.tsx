@@ -237,13 +237,13 @@ export default function AnalyticsPage() {
       )}
 
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">고급 분석</h1>
-        <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+        <h1 className="text-2xl sm:text-3xl font-bold">고급 분석</h1>
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <select
             value={period}
             onChange={(e) => setPeriod(e.target.value)}
-            className="input"
+            className="input w-full sm:w-auto"
           >
             <option value="7">지난 7일</option>
             <option value="30">지난 30일</option>
@@ -253,7 +253,7 @@ export default function AnalyticsPage() {
           </select>
           <button
             onClick={loadAnalyticsData}
-            className="btn btn-secondary"
+            className="btn btn-secondary w-full sm:w-auto"
           >
             새로고침
           </button>

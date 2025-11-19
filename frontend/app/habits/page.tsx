@@ -135,11 +135,11 @@ export default function HabitsPage() {
       )}
 
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">습관 관리</h1>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+        <h1 className="text-2xl sm:text-3xl font-bold">습관 관리</h1>
         <button
           onClick={() => setShowModal(true)}
-          className="btn-primary"
+          className="btn-primary w-full sm:w-auto"
         >
           + 새 습관 추가
         </button>
@@ -159,14 +159,14 @@ export default function HabitsPage() {
       ) : (
         <div className="grid gap-4">
           {habits.map((habit) => (
-            <div key={habit.id} className="card p-6">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold text-gray-900">
+            <div key={habit.id} className="card p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate">
                     {habit.name}
                   </h3>
                   {habit.description && (
-                    <p className="text-gray-600 text-sm mt-1">
+                    <p className="text-gray-600 text-sm mt-1 line-clamp-2">
                       {habit.description}
                     </p>
                   )}
@@ -185,21 +185,21 @@ export default function HabitsPage() {
                   </div>
                 </div>
 
-                <div className="text-right ml-4">
-                  <div className="text-2xl font-bold text-primary-600">
+                <div className="text-right flex-shrink-0">
+                  <div className="text-xl sm:text-2xl font-bold text-primary-600">
                     {habit.streak?.currentStreak || 0}
                   </div>
                   <div className="text-xs text-gray-500">연속 달성</div>
-                  <div className="text-sm text-gray-500 mt-2">
+                  <div className="text-sm text-gray-500 mt-1 sm:mt-2">
                     최장: {habit.streak?.longestStreak || 0}
                   </div>
                 </div>
               </div>
 
-              <div className="mt-4 pt-4 border-t border-gray-200 flex gap-2">
+              <div className="mt-4 pt-4 border-t border-gray-200 flex flex-col sm:flex-row gap-2">
                 <button
                   onClick={() => handleToggleActive(habit.id, habit.isActive)}
-                  className={`btn btn-sm ${
+                  className={`btn btn-sm w-full sm:w-auto ${
                     habit.isActive ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-700'
                   }`}
                 >
@@ -207,7 +207,7 @@ export default function HabitsPage() {
                 </button>
                 <button
                   onClick={() => handleDelete(habit.id)}
-                  className="btn btn-sm bg-red-100 text-red-700 hover:bg-red-200 ml-auto"
+                  className="btn btn-sm bg-red-100 text-red-700 hover:bg-red-200 w-full sm:w-auto"
                 >
                   삭제
                 </button>
@@ -220,7 +220,7 @@ export default function HabitsPage() {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="card p-6 max-w-md w-full max-h-96 overflow-y-auto">
+          <div className="card p-4 sm:p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <h2 className="text-2xl font-bold mb-6">새 습관 추가</h2>
 
             <form onSubmit={handleSubmit} className="space-y-4">

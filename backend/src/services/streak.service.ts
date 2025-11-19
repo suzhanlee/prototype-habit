@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 
 export const streakService = {
   async calculateStreak(habitId: number) {
-    // Get all logs for the habit, ordered by date descending
+    // Get all completed logs for the habit, ordered by date descending
     const logs = await prisma.habitLog.findMany({
       where: {
         habitId,
@@ -27,64 +27,63 @@ export const streakService = {
       return;
     }
 
-    // Calculate streak from today backwards
+    // Convert logs to date set for efficient lookup
+    const completedDates = new Set(
+      logs.map(log => {
+        const date = new Date(log.loggedDate);
+        return date.toISOString().split('T')[0]; // Normalize to YYYY-MM-DD
+      })
+    );
+
+    // Get today and normalize
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    const todayStr = today.toISOString().split('T')[0];
 
     let currentStreak = 0;
     let streakStartedDate: Date | null = null;
-
-    // Start from yesterday if today is not completed, or from today if it is
-    let checkDate = new Date(today);
-    const firstLogDate = new Date(logs[0].loggedDate);
+    let lastCompletedDate = new Date(logs[0].loggedDate);
 
     // Check if today is completed
-    const todayLog = logs.find(log => {
-      const logDate = new Date(log.loggedDate);
-      logDate.setHours(0, 0, 0, 0);
-      return logDate.getTime() === today.getTime();
-    });
+    const isTodayCompleted = completedDates.has(todayStr);
 
-    if (!todayLog) {
+    // Start checking from today if completed, otherwise from yesterday
+    let checkDate = new Date(today);
+    if (!isTodayCompleted) {
       checkDate.setDate(checkDate.getDate() - 1);
     }
 
-    // Count consecutive days
-    for (let i = 0; ; i++) {
-      const currentCheckDate = new Date(checkDate);
-      currentCheckDate.setDate(currentCheckDate.getDate() - i);
-      currentCheckDate.setHours(0, 0, 0, 0);
+    // Count consecutive days backwards from most recent completion
+    while (true) {
+      const checkDateStr = checkDate.toISOString().split('T')[0];
 
-      const logExists = logs.find(log => {
-        const logDate = new Date(log.loggedDate);
-        logDate.setHours(0, 0, 0, 0);
-        return logDate.getTime() === currentCheckDate.getTime();
-      });
-
-      if (logExists) {
+      if (completedDates.has(checkDateStr)) {
         currentStreak++;
         if (!streakStartedDate) {
-          streakStartedDate = new Date(currentCheckDate);
+          streakStartedDate = new Date(checkDate);
         }
+        // Move to previous day
+        checkDate.setDate(checkDate.getDate() - 1);
       } else {
+        // Break the streak - missing day found
         break;
       }
     }
 
-    // Get longest streak
+    // Get current longest streak from database
     const streakData = await prisma.streak.findUnique({
       where: { habitId },
     });
 
     const longestStreak = Math.max(streakData?.longestStreak || 0, currentStreak);
 
-    // Update streak
+    // Update streak record
     await prisma.streak.update({
       where: { habitId },
       data: {
         currentStreak,
         longestStreak,
-        lastCompletedDate: firstLogDate,
+        lastCompletedDate,
         streakStartedDate,
       },
     });
@@ -123,5 +122,54 @@ export const streakService = {
         streakStartedDate: null,
       },
     });
+  },
+
+  /**
+   * Check if streak recalculation is needed for a habit
+   * This prevents unnecessary recalculations on every completion
+   */
+  async shouldRecalculateStreak(habitId: number): Promise<boolean> {
+    const streak = await prisma.streak.findUnique({
+      where: { habitId },
+    });
+
+    if (!streak) {
+      return true; // No streak record, need to calculate
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = today.toISOString().split('T')[0];
+
+    // Check if today has a completion
+    const todayLog = await prisma.habitLog.findFirst({
+      where: {
+        habitId,
+        isCompleted: true,
+        loggedDate: new Date(todayStr),
+      },
+    });
+
+    // If streak.lastCompletedDate is not today or yesterday, we might need recalculation
+    if (streak.lastCompletedDate) {
+      const lastCompletedDate = new Date(streak.lastCompletedDate);
+      lastCompletedDate.setHours(0, 0, 0, 0);
+
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      yesterday.setHours(0, 0, 0, 0);
+
+      // If last completion is older than yesterday, we need to recalculate
+      if (lastCompletedDate < yesterday) {
+        return true;
+      }
+
+      // If today is completed but lastCompletedDate is not today, we need to recalculate
+      if (todayLog && lastCompletedDate.getTime() !== today.getTime()) {
+        return true;
+      }
+    }
+
+    return false; // No recalculation needed
   },
 };
