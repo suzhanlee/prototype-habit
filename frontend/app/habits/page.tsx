@@ -34,8 +34,49 @@ export default function HabitsPage() {
     }
   };
 
+  const validateForm = () => {
+    const errors: string[] = [];
+
+    // Name validation
+    if (!formData.name.trim()) {
+      errors.push('습관명을 입력해주세요.');
+    } else if (formData.name.trim().length < 2) {
+      errors.push('습관명은 최소 2글자 이상이어야 합니다.');
+    } else if (formData.name.trim().length > 50) {
+      errors.push('습관명은 최대 50글자까지 가능합니다.');
+    }
+
+    // Description validation
+    if (formData.description && formData.description.trim().length > 200) {
+      errors.push('설명은 최대 200글자까지 가능합니다.');
+    }
+
+    // Target value validation
+    if (formData.targetValue && formData.targetValue.trim().length > 100) {
+      errors.push('목표값은 최대 100글자까지 가능합니다.');
+    }
+
+    // Custom frequency validation
+    if (formData.frequencyType === 'custom' && !formData.targetValue.trim()) {
+      errors.push('사용자 정의 빈도는 목표값을 입력해야 합니다.');
+    }
+
+    return errors;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Clear previous errors
+    setError('');
+
+    // Validate form
+    const validationErrors = validateForm();
+    if (validationErrors.length > 0) {
+      setError(validationErrors.join(' '));
+      return;
+    }
+
     try {
       await habitsApi.createHabit(formData);
       setFormData({
@@ -50,7 +91,7 @@ export default function HabitsPage() {
       setShowModal(false);
       await loadHabits();
     } catch (err: any) {
-      setError(err.message || 'Failed to create habit');
+      setError(err.message || '습관 생성에 실패했습니다. 다시 시도해주세요.');
     }
   };
 
